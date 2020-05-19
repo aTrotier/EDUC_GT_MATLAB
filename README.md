@@ -4,7 +4,7 @@ Title : Protyping at the scanner with MATLAB part 2
 
 Schedule : June 25, 2020 | 16:00-17:00 
 
-Speakers : Stanislas Rappachi & Aurélien Trotier
+Speakers : Stanislas Rapacchi & Aurélien Trotier
 
 [TOC]
 
@@ -15,13 +15,14 @@ The Gadgetron responds to two major issues in MRI:
 - prototyping: how to develop a new reconstruction and associate it with an existing or developing sequence.
 - deployment: how to deploy a sequence and reconstruction on several sites for a clinical study
 
-The Gadgetron also offers software flexibility (choice of language used) and hardware flexibility (choice of reconstruction hardware: from simple PC to Cloud). Specific aera of research impose constraints on reconstruction time or latency. Typically deployment on clinical sites or interventional imaging are two scenarios where the use of C ++ will be preferable. For most of the other thematics, languages such as Python or Matlab are more accessible and particularly adapted to our computing problems (ex: matrix calculation, linear algebra). Addionnally, Python is quite popular in image processing (itk, vtk) and in machine learing (keras, tensor flow). 
+The Gadgetron also offers software flexibility (choice of language used) and hardware flexibility (choice of reconstruction hardware: from simple PC to Cloud). Specific aera of research impose constraints on reconstruction time or latency. Typically deployment on clinical sites or interventional imaging are two scenarios where the use of C ++ will be preferable. For most of the other thematics, languages such as Python or Matlab are more accessible and particularly adapted to research computing problems (ex: matrix calculation, linear algebra). 
+On one side, Python is quite popular in image processing (itk, vtk) and in machine learing (keras, tensor flow). On the other side, Matlab remains the envirronment of choice for rapid prototyping in signal and image processing. This session will target such needs.
 
 ## Installation
 
 To do the tutorial, you need to install three components:
 
-* MATLAB **above R2018b** (Superior to R2017a is also possible but need a modification of gadgetron) 
+* MATLAB **R2018b and above** (Superior to R2017a is also possible but need a modification of gadgetron) 
 * [gadgetron](https://github.com/gadgetron/gadgetron)
 * [gadgetron-matlab](https://github.com/gadgetron/gadgetron-matlab)
 
@@ -39,16 +40,39 @@ sudo apt-get install gadgetron-all
 
 
 
+
+**Matlab installed in Windows and Gadgetron in WSL**
+
+You need to install gadgetron from the source code (just reproduce a Docker file on your computer[Should we provide a complete script?]) and edit the file **gadgetron/connection/stream/external/Matlab.cpp**
+
+Replace line 15 :  
+` boost::process::search_path("matlab"),'`  
+by   
+` boost::process::search_path("matlab.exe"),`
+
+Recompile gadgetron.
+
+And in WSL, before running gadgetron:  
+` export GADGETRON_EXTERNAL_PORT`  
+` export GADGETRON_EXTERNAL_MODULE`  
+` export WSLENV = GADGETRON_EXTERNAL_PORT:GADGETRON_EXTERNAL_MODULE`  
+then run gadgetron!
+
+**Note: a script could do that for you**
+
+
 **Matlab version between R2017a and R2018a**
 
 You need to install gadgetron from the source code and edit the file **gadgetron/connection/stream/external/Matlab.cpp**
 
 Replace line 16 :
-`boost::process::args={"-batch", "gadgetron.external.main"},'`
-by 
-`boost::process::args={"--nosplash", "--nodesktop", "-r",  "\"gadgetron.external.main; exit\""},`**Need to be tested i'm not sure how to pass the args**
+`boost::process::args={"-batch", "gadgetron.external.main"},'`  
+by  
+`boost::process::args={"--nosplash", "--nodesktop", "-r",  "\"gadgetron.external.main; exit\""},`  
+**Need to be tested i'm not sure how to pass the args**
 
 Recompile gadgetron.
+
 
 **Gadgetron-Matlab**
 
@@ -66,7 +90,10 @@ The following programm will be used at the end of the tutorial. You can skip thi
 
 ## Testing your installation
 
-After installing gadgetron it is always a good idea to run the integration test. Here we will run the matlab test.
+
+To verify the Matlab-Gadgetron connection is working, one can type gadgetron --info. Matlab should be supported.  
+
+More throroughly, after installing gadgetron it is always a good idea to run the integration test. Here we will run the matlab test.
 
 To do so move to the folder **gadgetron/test/integration**/
 
@@ -104,6 +131,11 @@ The data has been converted with **siemens_to_ismrmrd**, we will not discuss dat
 
 ## Objectives
 
+* Review formalism of Matlab scripts and code
+  * Classes in +folder
+  * Data types definition
+  * Retrieve protocol headers (former xml) in Matlab
+  * Connection next actions
 * to understand how data is stored under matlab dependinfg of your xml configuration file :
   * Before AcquisitionAccumulateTriggerGadget
   * After AcquisitionAccumulateTriggerGadget
@@ -116,7 +148,7 @@ The data has been converted with **siemens_to_ismrmrd**, we will not discuss dat
 
 
 
-# VALERYYY
+# VALERYYY -> let's keep the same structure
 
 
 
