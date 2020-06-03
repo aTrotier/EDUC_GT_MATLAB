@@ -85,7 +85,7 @@ MP2RAGE_CS=real((conj(img_combined_CS(:,:,:,1)).*img_combined_CS(:,:,:,2)-multiF
 
 %%
 
-% img = gadgetron.lib.fft.cifftn(kdata,[1 2 3]); alternative using gadgetron fft
+% img = gadgetron.lib.fft.cifftn(kdata,[1 2 3]); %alternative using gadgetron fft
 %
 % img = fftshift(ifft(ifft(ifft(fftshift(kdata),[],1),[],2),[],3));
 % img = squeeze(sqrt(sum(abs(img).^2,4)));
