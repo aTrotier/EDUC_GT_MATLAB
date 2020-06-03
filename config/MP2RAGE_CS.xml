@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <version>2</version>
+
+    <readers>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>AcquisitionReader</classname>
+        </reader>
+        <reader>
+            <dll>gadgetron_core_readers</dll>
+            <classname>WaveformReader</classname>
+        </reader>
+    </readers>
+
+    <writers>
+        <writer>
+            <dll>gadgetron_core_writers</dll>
+            <classname>ImageWriter</classname>
+        </writer>
+    </writers>
+
+    <stream>
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>NoiseAdjustGadget</classname>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>RemoveROOversamplingGadget</classname>
+        </gadget>
+
+
+        <gadget>
+          <name>PCA</name>
+          <dll>gadgetron_mricore</dll>
+          <classname>PCACoilGadget</classname>
+        </gadget>
+
+        <gadget>
+          <name>CoilReduction</name>
+          <dll>gadgetron_mricore</dll>
+          <classname>CoilReductionGadget</classname>
+          <property name="coils_out" value="16"/>
+        </gadget>
+
+
+<!--
+        <gadget>
+            <name>PrepRef</name>
+            <dll>gadgetron_mricore</dll>
+            <classname>GenericReconCartesianReferencePrepGadget</classname>
+
+            <property><name>debug_folder</name><value></value></property>
+            <property><name>perform_timing</name><value>true</value></property>
+            <property><name>verbose</name><value>true</value></property>
+
+            <property><name>average_all_ref_N</name><value>true</value></property>
+            <property><name>average_all_ref_S</name><value>true</value></property>
+            <property><name>prepare_ref_always</name><value>true</value></property>
+        </gadget>
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>GenericReconEigenChannelGadget</classname>
+            <property name="debug_folder" value="true"/>
+            <property name="perform_timing" value="true"/>
+            <property name="verbose" value="true"/>
+
+            <property name="average_all_ref_N" value="true"/>
+            <property name="average_all_ref_S" value="true"/>
+
+            <property name="upstream_coil_compression" value="true"/>
+            <property name="upstream_coil_compression_thres" value="0.005"/>
+            <property name="upstream_coil_compression_num_modesKept" value="10"/>
+        </gadget>
+-->
+
+
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>AcquisitionAccumulateTriggerGadget</classname>
+            <property name="trigger_dimension" value=""/>
+	    <property name="sorting_dimension" value=""/>
+        </gadget>
+<!--
+        <gadget>
+            <dll>gadgetron_mricore</dll>
+            <classname>BucketToBufferGadget</classname>
+            <property name="N_dimension" value="set"/>
+            <property name="S_dimension" value="repetition"/>
+            <property name="split_slices" value="false"/>
+            <property name="ignore_segment" value="true"/>
+            <property name="verbose" value="true"/>
+        </gadget>
+
+        <gadget>
+            <name>GenericReconCopyGadget</name>
+            <dll>gadgetron_mricore_UMS</dll>
+            <classname>GenericReconCopyGadget</classname>
+
+            <property name="debug_folder" value=""/>
+            <property name="perform_timing" value="true"/>
+            <property name="verbose" value="true"/>
+        </gadget>
+-->
+
+        <external>
+            <!-- Connect to a running process on port 18000. -->
+            <connect port="18000"/>
+
+            <!-- The configuration is sent to the external process. It's left pretty empty here. -->
+            <configuration/>
+        </external>
+    </stream>
+</configuration>
