@@ -15,8 +15,9 @@ The Gadgetron responds to two major issues in MRI:
 - prototyping: how to develop a new reconstruction and associate it with an existing or developing sequence.
 - deployment: how to deploy a sequence and reconstruction on several sites for a clinical study
 
-The Gadgetron also offers software flexibility (choice of language used) and hardware flexibility (choice of reconstruction hardware: from simple PC to Cloud). Specific aera of research impose constraints on reconstruction time or latency. Typically deployment on clinical sites or interventional imaging are two scenarios where the use of C ++ will be preferable. For most of the other thematics, languages such as Python or Matlab are more accessible and particularly adapted to research computing problems (ex: matrix calculation, linear algebra). 
-On one side, Python is quite popular in image processing (itk, vtk) and in machine learing (keras, tensor flow). On the other side, Matlab remains the envirronment of choice for rapid prototyping in signal and image processing. This session will target such needs.
+For many, Matlab remains the environment of choice for rapid prototyping in signal and image processing. This session will target such needs. 
+
+Basic knowledge of Matlab is expected for this session. Advanced Matlab programming such as packaging and nested functions is not mandatory and can be easily understood on-the-fly. Gadgetron-Matlab uses both, and we hope this session will demystify these notions for those not familiar with them.
 
 ## Installation
 
@@ -40,25 +41,34 @@ sudo apt-get install gadgetron-all
 
 
 
-
 **Matlab installed in Windows and Gadgetron in WSL**
 
-You need to install gadgetron from the source code (just reproduce a Docker file on your computer[Should we provide a complete script?]) and edit the file **gadgetron/connection/stream/external/Matlab.cpp**
+For a Windows Matlab installation to be visible from WSL, an extra script is needed. Create a script file named 'matlab' (no extension!). You can use nano or your preferred editor:
 
-Replace line 15 :  
-` boost::process::search_path("matlab"),'`  
-by   
-` boost::process::search_path("matlab.exe"),`
+ `nano matlab`
 
-Recompile gadgetron.
+In it, copy:
 
-And in WSL, before running gadgetron:  
-` export GADGETRON_EXTERNAL_PORT`  
-` export GADGETRON_EXTERNAL_MODULE`  
-` export WSLENV = GADGETRON_EXTERNAL_PORT:GADGETRON_EXTERNAL_MODULE`  
-then run gadgetron!
+```
+#!/bin/bash
+export WSLENV=GADGETRON_EXTERNAL_PORT:GADGETRON_EXTERNAL_MODULE
+matlab.exe $@
+```
 
-**Note: a script could do that for you**
+And save the file 'matlab'. Make it executable:
+
+```
+sudo chmod u+x matlab
+```
+
+Move it to a proper place that is in your PATH:
+
+```
+mv matlab /usr/local/bin/matlab
+```
+
+Save. Once installed, we're good to go!
+
 
 
 **Matlab version between R2017a and R2018a**
@@ -69,20 +79,21 @@ Replace line 16 :
 `boost::process::args={"-batch", "gadgetron.external.main"},'`  
 by  
 `boost::process::args={"--nosplash", "--nodesktop", "-r",  "\"gadgetron.external.main; exit\""},`  
-**Need to be tested i'm not sure how to pass the args**
+**Need to be tested**
 
 Recompile gadgetron.
 
 
+
 **Gadgetron-Matlab**
 
-Detailed installation and how to use matlab is available [here](https://github.com/gadgetron/gadgetron/wiki/Using-Matlab-with-Gadgetron). Basically you can search **gadgetron** in the Add-On manager.
+Detailed installation and how to install and use Gadgetron-Matlab is available [here](https://github.com/gadgetron/gadgetron/wiki/Using-Matlab-with-Gadgetron). Basically you can search **gadgetron** in the Matlab Add-On manager.
 
 
 
 **Optional**
 
-The following programm will be used at the end of the tutorial. You can skip this part at the beginning.
+The following program will be used at the end of the tutorial. You can skip this part at the beginning.
 [ismrmrdviewer](https://github.com/ismrmrd/ismrmrdviewer)
 [BART](https://github.com/mrirecon/bart)
 
@@ -90,10 +101,23 @@ The following programm will be used at the end of the tutorial. You can skip thi
 
 ## Testing your installation
 
+To verify the Matlab-Gadgetron connection is working, one can type 
 
-To verify the Matlab-Gadgetron connection is working, one can type gadgetron --info. Matlab should be supported.  
+`gadgetron --info.` 
 
-More throroughly, after installing gadgetron it is always a good idea to run the integration test. Here we will run the matlab test.
+Matlab should be supported.  
+
+```
+Gadgetron Version Info
+  -- Version            : 4.1.1
+  -- Git SHA1           : 74f1d293866bb46a7c75ccca3eb0ededb4911e72
+  -- System Memory size : 32647 MB
+  -- Python Support     : YES
+  -- Matlab Support     : YES
+  -- CUDA Support       : NO
+```
+
+More thoroughly, after installing Gadgetron it is always a good idea to run the integration test. Here we will run the Matlab test.
 
 To do so move to the folder **gadgetron/test/integration**/
 
@@ -132,25 +156,74 @@ The data has been converted with **siemens_to_ismrmrd**, we will not discuss dat
 ## Objectives
 
 * Review formalism of Matlab scripts and code
-  * Classes in +folder
+  * Classes, packages in +folder, nested functions
   * Data types definition
   * Retrieve protocol headers (former xml) in Matlab
   * Connection next actions
-* to understand how data is stored under matlab dependinfg of your xml configuration file :
+* Understand how data is stored under matlab depending of your xml configuration file :
   * Before AcquisitionAccumulateTriggerGadget
   * After AcquisitionAccumulateTriggerGadget
   * After BucketToBufferGadget
-* to create a new matlab gadget using :
+* Create a new matlab gadget using :
   * the matlab debugger : **<connect>**
   * launching it without a matlab session open : <execute>
-* to send back images
-* to call BART for advanced reconstruction method
+* Send back images
+* Call BART for advanced reconstruction method
 
 
 
-# VALERYYY -> let's keep the same structure
+# Session layout
 
+### Review formalism of Matlab scripts and code
 
+* Classes, packages in +folder, nested functions
+
+Matlab can package a set of functions and classes in a folder starting with a `+` sign. By adding the parent folder in Matlab PATH, the whole package is exposed and can be called subsequently. If the gadgetron add-on has been added, from the `+gadgetron` folder, the class Constants can be called in Matlab:
+
+```
+>>gadgetron.Constants.ERROR
+
+ans =
+
+  uint16
+
+   8
+```
+
+A lot of nested functions are employed in the following demonstration. Nested functions have a limited scope of definition.
+
+```matlab
+function next = noise_adjust(input, header)
+
+noise_matrix        = [];
+
+function transformation = calculate_whitening_transformation(data)
+    covariance = (1.0 / (size(data, 1) - 1)) * (data' * data); 
+    transformation = inv(chol(covariance, 'upper'));
+end
+
+function acquisition = apply_whitening_transformation(acquisition)
+    acquisition.data = acquisition.data * noise_matrix; 
+end
+
+function acquisition = handle_noise(acquisition)    
+        if acquisition.is_flag_set(acquisition.ACQ_IS_NOISE_MEASUREMENT)
+   noise_matrix = calculate_whitening_transformation(acquisition.data);
+        else 
+   acquisition = apply_whitening_transformation(acquisition);
+        end
+end
+
+next = @() handle_noise(input());
+
+end
+```
+
+The variable noise_matrix is shared among all nested functions. One can define it, while another can use it internally. Safeguards have been remove for clarity, they are the user's responsibility! 
+
+* Data types definition
+* Retrieve protocol headers (former xml) in Matlab
+* Connection next actions
 
 ## Objectives
 
